@@ -100,33 +100,40 @@
     客户端SendThread线程接收事件通知，交由EventThread线程回调Watcher。客户端的Watcher机制同样是一次性的，一旦被触发后，该Watcher就失效了。
 
 10. ACL权限控制机制
-    UGO（User/Group/Others）
-    目前在Linux/Unix文件系统中使用，也是使用最广泛的权限控制方式。是一种粗粒度的文件系统权限控制模式。
 
-    ACL（Access Control List）访问控制列表
-    包括三个方面：
+    1. UGO（User/Group/Others）
 
-    权限模式（Scheme）
-    IP：从IP地址粒度进行权限控制
-    Digest：最常用，用类似于 username:password 的权限标识来进行权限配置，便于区分不同应用来进行权限控制
-    World：最开放的权限控制方式，是一种特殊的digest模式，只有一个权限标识“world:anyone”
-    Super：超级用户
-    授权对象
-    授权对象指的是权限赋予的用户或一个指定实体，例如IP地址或是机器灯。
+        目前在Linux/Unix文件系统中使用，也是使用最广泛的权限控制方式。是一种粗粒度的文件系统权限控制模式。
 
-    权限 Permission
-    CREATE：数据节点创建权限，允许授权对象在该Znode下创建子节点
-    DELETE：子节点删除权限，允许授权对象删除该数据节点的子节点
-    READ：数据节点的读取权限，允许授权对象访问该数据节点并读取其数据内容或子节点列表等
-    WRITE：数据节点更新权限，允许授权对象对该数据节点进行更新操作
-    ADMIN：数据节点管理权限，允许授权对象对该数据节点进行ACL相关设置操作
+    2. ACL（Access Control List）访问控制列表
+        
+        包括三个方面：
+
+        * 权限模式（Scheme）
+            1. IP：从IP地址粒度进行权限控制
+            2. Digest：最常用，用类似于 username:password 的权限标识来进行权限配置，便于区分不同应用来进行权限控制
+            3. World：最开放的权限控制方式，是一种特殊的digest模式，只有一个权限标识“world:anyone”
+            4. Super：超级用户
+
+        * 授权对象
+
+            授权对象指的是权限赋予的用户或一个指定实体，例如IP地址或是机器灯。
+
+        * 权限 Permission
+            * CREATE：数据节点创建权限，允许授权对象在该Znode下创建子节点
+            * DELETE：子节点删除权限，允许授权对象删除该数据节点的子节点
+            * READ：数据节点的读取权限，允许授权对象访问该数据节点并读取其数据内容或子节点列表等
+            * WRITE：数据节点更新权限，允许授权对象对该数据节点进行更新操作
+            * ADMIN：数据节点管理权限，允许授权对象对该数据节点进行ACL相关设置操作
 
 11. Chroot特性
+
     3.2.0版本后，添加了 Chroot特性，该特性允许每个客户端为自己设置一个命名空间。如果一个客户端设置了Chroot，那么该客户端对服务器的任何操作，都将会被限制在其自己的命名空间下。
 
     通过设置Chroot，能够将一个客户端应用于Zookeeper服务端的一颗子树相对应，在那些多个应用公用一个Zookeeper进群的场景下，对实现不同应用间的相互隔离非常有帮助。
 
 12. 会话管理
+
     分桶策略：将类似的会话放在同一区块中进行管理，以便于Zookeeper对会话进行不同区块的隔离处理以及同一区块的统一处理。
 
     分配原则：每个会话的“下次超时时间点”（ExpirationTime）
@@ -137,75 +144,73 @@
     ExpirationTime = (ExpirationTime_ / ExpirationInrerval + 1) * ExpirationInterval , ExpirationInterval 是指 Zookeeper 会话超时检查时间间隔，默认 tickTime
 
 13. 服务器角色
-    Leader
-    事务请求的唯一调度和处理者，保证集群事务处理的顺序性
-    集群内部各服务的调度者
-    Follower
-    处理客户端的非事务请求，转发事务请求给Leader服务器
-    参与事务请求Proposal的投票
-    参与Leader选举投票
-    Observer
-    3.3.0版本以后引入的一个服务器角色，在不影响集群事务处理能力的基础上提升集群的非事务处理能力
 
-    处理客户端的非事务请求，转发事务请求给Leader服务器
-    不参与任何形式的投票
+    1. Leader
+        * 事务请求的唯一调度和处理者，保证集群事务处理的顺序性
+        * 集群内部各服务的调度者
+    2. Follower
+        * 处理客户端的非事务请求，转发事务请求给Leader服务器
+        * 参与事务请求Proposal的投票
+        * 参与Leader选举投票
+    3. Observer
+
+        3.3.0版本以后引入的一个服务器角色，在不影响集群事务处理能力的基础上提升集群的非事务处理能力
+        * 处理客户端的非事务请求，转发事务请求给Leader服务器
+        * 不参与任何形式的投票
 
 14. Zookeeper 下 Server工作状态
-    服务器具有四种状态，分别是LOOKING、FOLLOWING、LEADING、OBSERVING。
 
-    LOOKING：寻找Leader状态。当服务器处于该状态时，它会认为当前集群中没有Leader，因此需要进入Leader选举状态。
-    FOLLOWING：跟随者状态。表明当前服务器角色是Follower。
-    LEADING：领导者状态。表明当前服务器角色是Leader。
-    OBSERVING：观察者状态。表明当前服务器角色是Observer。
+    服务器具有四种状态，分别是LOOKING、FOLLOWING、LEADING、OBSERVING。
+    * LOOKING：寻找Leader状态。当服务器处于该状态时，它会认为当前集群中没有Leader，因此需要进入Leader选举状态。
+    * FOLLOWING：跟随者状态。表明当前服务器角色是Follower。
+    * LEADING：领导者状态。表明当前服务器角色是Leader。
+    * OBSERVING：观察者状态。表明当前服务器角色是Observer。
 
 15. Leader 选举
-Leader选举是保证分布式数据一致性的关键所在。当Zookeeper集群中的一台服务器出现以下两种情况之一时，需要进入Leader选举。
 
-　　(1) 服务器初始化启动。
+    Leader选举是保证分布式数据一致性的关键所在。当Zookeeper集群中的一台服务器出现以下两种情况之一时，需要进入Leader选举。
+    * 服务器初始化启动。
+    * 服务器运行期间无法和Leader保持连接。
 
-　　(2) 服务器运行期间无法和Leader保持连接。
+    1. 服务器启动时期的Leader选举
 
-　　下面就两种情况进行分析讲解。
+        若进行Leader选举，则至少需要两台机器，这里选取3台机器组成的服务器集群为例。在集群初始化阶段，当有一台服务器Server1启动时，其单独无法进行和完成  Leader选举，当第二台服务器Server2启动时，此时两台机器可以相互通信，每台机器都试图找到Leader，于是进入Leader选举过程。选举过程如下
 
-　　1. 服务器启动时期的Leader选举
+        1. 每个Server发出一个投票。由于是初始情况，Server1和Server2都会将自己作为Leader服务器来进行投票，每次投票会包含所推举的服务器的myid和ZXID，使用(myid, ZXID)来表示，此时Server1的投票为(1, 0)，Server2的投票为(2, 0)，然后各自将这个投票发给集群中其他机器。
 
-　　若进行Leader选举，则至少需要两台机器，这里选取3台机器组成的服务器集群为例。在集群初始化阶段，当有一台服务器Server1启动时，其单独无法进行和完成Leader选举，当第二台服务器Server2启动时，此时两台机器可以相互通信，每台机器都试图找到Leader，于是进入Leader选举过程。选举过程如下
+        2. 接受来自各个服务器的投票。集群的每个服务器收到投票后，首先判断该投票的有效性，如检查是否是本轮投票、是否来自LOOKING状态的服务器。
 
-　　(1) 每个Server发出一个投票。由于是初始情况，Server1和Server2都会将自己作为Leader服务器来进行投票，每次投票会包含所推举的服务器的myid和ZXID，使用(myid, ZXID)来表示，此时Server1的投票为(1, 0)，Server2的投票为(2, 0)，然后各自将这个投票发给集群中其他机器。
+        3. 处理投票。针对每一个投票，服务器都需要将别人的投票和自己的投票进行PK，PK规则如下
 
-　　(2) 接受来自各个服务器的投票。集群的每个服务器收到投票后，首先判断该投票的有效性，如检查是否是本轮投票、是否来自LOOKING状态的服务器。
+            * 优先检查ZXID。ZXID比较大的服务器优先作为Leader。
 
-　　(3) 处理投票。针对每一个投票，服务器都需要将别人的投票和自己的投票进行PK，PK规则如下
+            * 如果ZXID相同，那么就比较myid。myid较大的服务器作为Leader服务器。
 
-　　　　· 优先检查ZXID。ZXID比较大的服务器优先作为Leader。
+            对于Server1而言，它的投票是(1, 0)，接收Server2的投票为(2, 0)，首先会比较两者的ZXID，均为0，再比较myid，此时Server2的myid最大，于是更新自己的投票为(2, 0)，然后重新投票，对于Server2而言，其无须更新自己的投票，只是再次向集群中所有机器发出上一次投票信息即可。
 
-　　　　· 如果ZXID相同，那么就比较myid。myid较大的服务器作为Leader服务器。
+        4. 统计投票。每次投票后，服务器都会统计投票信息，判断是否已经有过半机器接受到相同的投票信息，对于Server1、Server2而言，都统计出集群中已经有两台机器接受了(2, 0)的投票信息，此时便认为已经选出了Leader。
 
-　　对于Server1而言，它的投票是(1, 0)，接收Server2的投票为(2, 0)，首先会比较两者的ZXID，均为0，再比较myid，此时Server2的myid最大，于是更新自己的投票为(2, 0)，然后重新投票，对于Server2而言，其无须更新自己的投票，只是再次向集群中所有机器发出上一次投票信息即可。
+        5. 改变服务器状态。一旦确定了Leader，每个服务器就会更新自己的状态，如果是Follower，那么就变更为FOLLOWING，如果是Leader，就变更为LEADING。
 
-　　(4) 统计投票。每次投票后，服务器都会统计投票信息，判断是否已经有过半机器接受到相同的投票信息，对于Server1、Server2而言，都统计出集群中已经有两台机器接受了(2, 0)的投票信息，此时便认为已经选出了Leader。
+    2. 服务器运行时期的Leader选举
 
-　　(5) 改变服务器状态。一旦确定了Leader，每个服务器就会更新自己的状态，如果是Follower，那么就变更为FOLLOWING，如果是Leader，就变更为LEADING。
+        在Zookeeper运行期间，Leader与非Leader服务器各司其职，即便当有非Leader服务器宕机或新加入，此时也不会影响Leader，但是一旦Leader服务器挂了，那么整个集群将暂停对外服务，进入新一轮Leader选举，其过程和启动时期的Leader选举过程基本一致。假设正在运行的有Server1、Server2、Server3三台服务器，当前Leader是Server2，若某一时刻Leader挂了，此时便开始Leader选举。选举过程如下
+        
+        1. 变更状态。Leader挂后，余下的非Observer服务器都会讲自己的服务器状态变更为LOOKING，然后开始进入Leader选举过程。
 
-　　2. 服务器运行时期的Leader选举
+        2. 每个Server会发出一个投票。在运行期间，每个服务器上的ZXID可能不同，此时假定Server1的ZXID为123，Server3的ZXID为122；在第一轮投票中，Server1和Server3都会投自己，产生投票(1, 123)，(3, 122)，然后各自将投票发送给集群中所有机器。
 
-　　在Zookeeper运行期间，Leader与非Leader服务器各司其职，即便当有非Leader服务器宕机或新加入，此时也不会影响Leader，但是一旦Leader服务器挂了，那么整个集群将暂停对外服务，进入新一轮Leader选举，其过程和启动时期的Leader选举过程基本一致。假设正在运行的有Server1、Server2、Server3三台服务器，当前Leader是Server2，若某一时刻Leader挂了，此时便开始Leader选举。选举过程如下
+        3. 接收来自各个服务器的投票。与启动时过程相同。
 
-　　(1) 变更状态。Leader挂后，余下的非Observer服务器都会讲自己的服务器状态变更为LOOKING，然后开始进入Leader选举过程。
+        4. 处理投票。与启动时过程相同，此时，Server1将会成为Leader。
 
-　　(2) 每个Server会发出一个投票。在运行期间，每个服务器上的ZXID可能不同，此时假定Server1的ZXID为123，Server3的ZXID为122；在第一轮投票中，Server1和Server3都会投自己，产生投票(1, 123)，(3, 122)，然后各自将投票发送给集群中所有机器。
+        5. 统计投票。与启动时过程相同。
 
-　　(3) 接收来自各个服务器的投票。与启动时过程相同。
-
-　　(4) 处理投票。与启动时过程相同，此时，Server1将会成为Leader。
-
-　　(5) 统计投票。与启动时过程相同。
-
-　　(6) 改变服务器的状态。与启动时过程相同。
+        6. 改变服务器的状态。与启动时过程相同。
 
 　　2.2 Leader选举算法分析
 
-　　在3.4.0后的Zookeeper的版本只保留了TCP版本的FastLeaderElection选举算法。当一台机器进入Leader选举时，当前集群可能会处于以下两种状态
+　　    在3.4.0后的Zookeeper的版本只保留了TCP版本的FastLeaderElection选举算法。当一台机器进入Leader选举时，当前集群可能会处于以下两种状态
 
 　　　　· 集群中已经存在Leader。
 
